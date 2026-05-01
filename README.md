@@ -6,14 +6,48 @@
 
 ## Features
 
-- **Multi-provider support**: Works with OpenAI, Anthropic, and OpenCode APIs
-- **Agentic tools**: bash, read, write, edit, grep, find, ls
-- **Interactive mode**: Chat with your AI assistant
-- **Pipe mode**: `./pu.py --pipe` for CI/automation
-- **Token & cost tracking**: Monitor usage in real-time
-- **Session persistence**: Resume conversations across sessions
-- **Context management**: Automatic compaction and token management
-- **Configurable**: Extensive environment variable support
+✅ **Feature parity with pu.sh** — All original pu.sh features are implemented:
+- Multi-provider support (Anthropic, OpenAI, OpenCode)
+- Agentic tools (bash, read, write, edit, grep, find, ls)
+- Interactive mode with commands (/model, /effort, /login, /logout, /flush, /compact, /export, /session, /skill:name, /template)
+- Pipe mode for CI/automation
+- Token & cost tracking with real-time monitoring
+- Session persistence and history
+- Context management with automatic compaction
+- Skill system (`/skill:name`)
+- Template system (`/template-name`)
+- Session export to markdown (`/export`)
+- Setup wizard (`/login`)
+- Log replay functionality
+
+**Additional pu.py features:**
+- Thread-safe token tracking
+- Prompt-based tool calling for non-native models (OpenCode)
+- Structured Python code with proper error handling
+
+## Implementation Details
+
+| Aspect | pu.sh (Original) | pu.py (Python Port) |
+|--------|-------------------|---------------------|
+| Lines of code | 392 | 1640+ |
+| Language | Bash + awk + curl | Python 3 |
+| Dependencies | sh, curl, awk (standard Unix tools) | Python standard library |
+| File size | 43.1K | 54.5K+ |
+
+### Key Differences
+
+**pu.py adds:**
+- OpenCode provider support (big-pickle, qwen, glm, minimax, kimi)
+- Thread-safe token tracking with TOKEN_LOCK
+- Prompt-based tool calling for models without native tool support
+- Python structured code with classes (ParsedResponse)
+- Better error handling with try/except blocks
+
+**pu.sh advantages:**
+- More compact (392 lines vs 1640+)
+- No Python dependency
+- Uses standard Unix tools (curl, awk)
+- Custom JSON parsing without external dependencies
 
 ## Quick Start
 
@@ -107,6 +141,67 @@ When running in interactive mode, use these commands:
 - `glm`
 - `qwen`
 - `kimi`
+
+## Technical Comparison
+
+### Context Management
+
+**pu.sh:**
+- Custom awk-based context compaction (`_ctx_entries()`, `_ctx_tail_start()`, etc.)
+- Local memory compaction with `_ctx_local_memory()`
+- Multiple fallback strategies
+
+**pu.py:**
+- Python-based context management
+- Token-based tracking with `CTX_LIMIT`, `AGENT_RESERVE`, `AGENT_KEEP_RECENT`
+- Automatic compaction based on context size
+
+### Threading & Spinners
+
+**pu.sh:**
+- Background process spinner using `&` and process management
+- Uses `tput` for terminal control
+
+**pu.py:**
+- Python `threading` module for spinner
+- `TOKEN_LOCK` for thread safety
+- Cleaner terminal output handling
+
+### JSON Parsing
+
+**pu.sh:**
+- Custom JSON parsing using awk (`jp()`, `jb()`, `each_tool_use()`, `o_items()`)
+- Handles Unicode escapes, nested objects, arrays
+- No external JSON parser dependency
+
+**pu.py:**
+- Uses Python's built-in `json` module
+- `extract_json()` helper for extracting JSON from text
+- `ParsedResponse` class for structured response handling
+
+### Token & Cost Tracking
+
+**pu.sh:**
+- Shell-based arithmetic for token counting
+- Awk-based cost calculation
+- `track_tokens()` function
+
+**pu.py:**
+- Thread-safe token tracking with `TOKEN_LOCK`
+- `track_tokens()` with support for both Anthropic and OpenAI formats
+- Price calculation using `AGENT_PRICE_IN_PER_MTOK` and `AGENT_PRICE_OUT_PER_MTOK`
+
+### Error Handling
+
+**pu.sh:**
+- Uses `set -u` for undefined variable detection
+- Custom `_kill_tree()` for process cleanup
+- Signal handling with `trap`
+
+**pu.py:**
+- Try/except blocks
+- `subprocess` module for command execution
+- Signal handling with `signal` module
 
 ## Requirements
 
