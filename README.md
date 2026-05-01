@@ -1,6 +1,8 @@
 # pu.py
 
-![pu.py logo](logos/logo.png)
+<p align="center">
+  <img src="logos/logo.png" alt="pu.py" width="300">
+</p>
 
 **Portable agentic harness** — A Python port of [pu.sh](https://github.com/NahimNasser/pu) that provides an intelligent coding assistant with tool-calling capabilities.
 
